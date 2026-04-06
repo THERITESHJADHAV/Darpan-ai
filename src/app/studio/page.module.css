@@ -1,0 +1,328 @@
+.page {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.headerIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary), hsl(280, 80%, 55%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 24px var(--primary-glow);
+}
+
+.title {
+  font-size: var(--font-2xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+/* Step Content */
+.stepContent {
+  max-width: 800px;
+}
+
+.stepTitle {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+.stepDesc {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+}
+
+/* Input Method Tabs */
+.inputMethodTabs {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  width: fit-content;
+  margin-bottom: var(--space-lg);
+}
+
+.methodTab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all var(--transition-base);
+}
+
+.methodTab:hover {
+  color: var(--text-primary);
+}
+
+.methodActive {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+/* Input Area */
+.inputArea {
+  margin-bottom: var(--space-lg);
+}
+
+.contentTextarea {
+  min-height: 280px;
+  line-height: 1.8;
+  resize: vertical;
+}
+
+.urlInput {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  position: relative;
+}
+
+.urlIcon {
+  position: absolute;
+  left: 16px;
+  color: var(--text-tertiary);
+}
+
+.urlField {
+  padding-left: 44px;
+}
+
+.inputMeta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-sm);
+}
+
+.charCount {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+/* Type Grid */
+.typeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.typeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-base);
+}
+
+.typeCard:hover {
+  transform: translateY(-4px);
+}
+
+.typeSelected {
+  background: var(--glass-bg-hover) !important;
+}
+
+.typeIconWrap {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-xs);
+}
+
+.typeLabel {
+  font-size: var(--font-sm);
+  font-weight: 700;
+}
+
+.typeDesc {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.typeCheck {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--success);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* Step Actions */
+.stepActions {
+  display: flex;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border);
+}
+
+/* Transforming State */
+.transformingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl) 0;
+  text-align: center;
+}
+
+.transformLoader {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-bottom: var(--space-xl);
+}
+
+.loaderOrb {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  opacity: 0.2;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.loaderIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--primary-light);
+  animation: float 2s ease-in-out infinite;
+}
+
+.transformTitle {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.transformSubtitle {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 400px;
+}
+
+.transformSteps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+
+.transformStep {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.spinning {
+  animation: rotate 1s linear infinite;
+}
+
+/* Result Preview */
+.resultHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.resultPreview {
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.resultMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.resultMeta h3 {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  flex: 1;
+}
+
+.blocksList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.blockPreview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+}
+
+.blockType {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.blockContent {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .typeGrid { grid-template-columns: repeat(2, 1fr); }
+  .inputMethodTabs { flex-wrap: wrap; }
+}
