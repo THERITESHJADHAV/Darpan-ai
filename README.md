@@ -8,8 +8,8 @@ Darpan-ai is an autonomous, full-stack pipeline that transforms any text, URL, o
 Watch Darpan-ai turn raw concepts into a continuous, perfectly synchronized 2D animated whiteboard video:
 
 <video width="100%" controls>
-  <source src="./Content%20to%202D%20whiteboard%20animation%20video.mp4" type="video/mp4">
-  Your browser does not support the video tag. <a href="./Content%20to%202D%20whiteboard%20animation%20video.mp4">Download the demo video here.</a>
+  <source src="https://github.com/THERITESHJADHAV/Darpan-ai/raw/main/Content%20to%202D%20whiteboard%20animation%20video.mp4" type="video/mp4">
+  <a href="https://github.com/THERITESHJADHAV/Darpan-ai/raw/main/Content%20to%202D%20whiteboard%20animation%20video.mp4">Download the demo video here.</a>
 </video>
 
 ## 🚀 The Monolithic AI Video Pipeline
@@ -19,31 +19,29 @@ Darpan-ai utilizes a highly optimized **Monolithic Full-Video Architecture** to 
 Instead of buffering scenes on the fly, the Node.js backend acts as a highly concurrent master orchestrator that generates all assets, compiles them, and serves a perfect, unified `.mp4` file.
 
 ```mermaid
-graph TD
-    A[User Input/Topic] -->|Next.js API| B(Google Gemini Pro)
-    B -->|Generates JSON Storyboard| C{Scene Orchestrator}
+graph LR
+    A[User Topic] --> B(Gemini 1.5)
+    B --> C{Orchestrator}
     
-    C -->|Concurrent Execution| D1[Freepik AI]
-    C -->|Concurrent Execution| D2[gTTS Audio]
+    C --> D1[Freepik AI]
+    C --> D2[gTTS Audio]
     
-    D1 -->|Base64 API| E1{Image Valid?}
-    E1 -- Yes --> F[Comic Style Image]
-    E1 -- Quota Exceeded --> F2[Pillow Text Fallback Image]
+    D1 --> E1{Valid?}
+    E1 -- Yes --> F[Comic Image]
+    E1 -- Quota Exceeded --> F2[Pillow Text]
     
-    F --> G[OpenCV Drawing Engine]
+    F --> G[OpenCV Engine]
     F2 --> G
     
-    D2 --> H[ffprobe Duration Check]
-    H -->|Exact Audio Length| G
+    D2 --> H[ffprobe]
+    H --> G
     
-    G -->|Padded Animation Length| I[Raw Video Output]
-    I --> J[FFmpeg Scene Merge]
+    G --> I[Raw Video]
+    I --> J[FFmpeg Merge]
     D2 --> J
     
-    J -->|Merged Scene| K{All Scenes Done?}
-    K -- No --> C
-    K -- Yes --> L[FFmpeg Concat]
-    L --> M[Final Seamless final.mp4]
+    J --> L[FFmpeg Concat]
+    L --> M[final.mp4]
 ```
 
 ### 🧠 Step-by-Step Architecture:
