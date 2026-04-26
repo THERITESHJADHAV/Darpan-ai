@@ -51,6 +51,15 @@ graph LR
 4.  **✍️ Dynamic Whiteboard Animation**: An OpenCV Python script simulates a hand-drawn effect. Crucially, the drawing time is mathematically locked to the exact audio duration **+ 2 seconds of padding**. This ensures the audio never cuts off and the user has time to view the final sketched image before the next scene.
 5.  **🎞️ FFmpeg Stitching**: FFmpeg merges the audio and video streams for each scene without truncating the padded video length. Finally, `ffmpeg concat` natively stitches all scenes into one perfectly smooth `final.mp4` file.
 
+## 🧠 Interactive AI Mind Maps
+In addition to video generation, Darpan-ai features an interactive, highly dynamic **AI Mind Map Generator**.
+
+-   **Deep Hierarchical Generation**: Powered by Google Gemini 1.5, it parses complex content and generates a deeply nested JSON tree (3-4 levels deep).
+-   **In-Place Expansion**: Navigate complex topics easily by expanding and collapsing branches without losing the full context of the map.
+-   **Full Drag-and-Drop Reparenting**: Easily restructure the mind map by grabbing any node and dropping it onto another to instantly reparent it. 
+-   **Inline Editing**: Double-click any node to rename it, or hover to quickly add child branches or delete sections.
+-   **Smooth SVG Visualization**: Nodes are connected via smooth bezier curves with color-coded depth levels, creating an intuitive visual connection of concepts.
+
 ## 💎 Key Features
 
 -   **Native Seamless Playback**: By compiling everything into one master file on the backend, the player features a single global timeline slider, play/pause controls, and zero frame drops or audio stuttering.

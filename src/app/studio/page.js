@@ -5,16 +5,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Sparkles, FileText, Link as LinkIcon, Upload, PenTool,
   BookOpen, Brain, Rocket, Presentation, PieChart, Globe,
-  ArrowRight, ArrowLeft, Loader2, Check, Wand2, Eye, Play
+  ArrowRight, ArrowLeft, Loader2, Check, Wand2, Eye, Play,
+  MonitorPlay, Network
 } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
+import MindMapViewer from '@/components/MindMapViewer';
 import styles from './page.module.css';
 
 const experienceTypes = [
-  { id: 'story', icon: BookOpen, label: 'Interactive Story', desc: 'Immersive narrative experience', color: '#a78bfa' },
+  { id: 'story', icon: MonitorPlay, label: 'Whiteboard animation', desc: 'Hand-drawn explainer video', color: '#a78bfa' },
   { id: 'quiz', icon: Brain, label: 'Knowledge Quiz', desc: 'Interactive assessments', color: '#34d399' },
   { id: 'landing', icon: Rocket, label: 'Landing Page', desc: 'High-converting pages', color: '#f59e0b' },
-  { id: 'presentation', icon: Presentation, label: 'Presentation', desc: 'Slide-based deck', color: '#60a5fa' },
+  { id: 'presentation', icon: Network, label: 'Mind map', desc: 'Visual concept connection', color: '#60a5fa' },
   { id: 'infographic', icon: PieChart, label: 'Infographic', desc: 'Data visualization', color: '#f472b6' },
   { id: 'microsite', icon: Globe, label: 'Microsite', desc: 'Complete mini-site', color: '#22d3ee' },
 ];
@@ -37,6 +39,7 @@ function StudioContent() {
   const [selectedType, setSelectedType] = useState(preselectedType || 'story');
   const [isTransforming, setIsTransforming] = useState(false);
   const [result, setResult] = useState(null);
+  const [mindMapData, setMindMapData] = useState(null);
   const [error, setError] = useState('');
 
   const steps = [
@@ -49,34 +52,52 @@ function StudioContent() {
   async function handleTransform() {
     setIsTransforming(true);
     setError('');
+    setMindMapData(null);
 
     try {
       const finalContent = inputMethod === 'url'
         ? `URL: ${url}\n\nPlease create content based on the topic of this URL.`
         : content;
 
-      const res = await fetch('/api/ai/transform', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: finalContent,
-          type: selectedType,
-        }),
-      });
+      if (selectedType === 'presentation') {
+        // Mind Map flow
+        const res = await fetch('/api/ai/mindmap', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: finalContent }),
+        });
 
-      if (!res.ok) {
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Mind map generation failed');
+        }
+
         const data = await res.json();
-        throw new Error(data.error || 'Transform failed');
-      }
+        setMindMapData(data);
+        setResult({ title: data.title, type: 'mindmap' });
+        setStep(4);
+      } else {
+        // Video flow
+        const res = await fetch('/api/ai/transform', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: finalContent,
+            type: selectedType,
+          }),
+        });
 
-      const data = await res.json();
-      
-      // No longer need TTS generation from API since VideoPlayer uses Web Speech API!
-      const scenesWithAudio = data.blocks || [];
-      
-      data.blocks = scenesWithAudio;
-      setResult(data);
-      setStep(4);
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Transform failed');
+        }
+
+        const data = await res.json();
+        const scenesWithAudio = data.blocks || [];
+        data.blocks = scenesWithAudio;
+        setResult(data);
+        setStep(4);
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -238,7 +259,9 @@ function StudioContent() {
                 </div>
                 <h2 className={styles.transformTitle}>Transforming Your Content...</h2>
                 <p className={styles.transformSubtitle}>
-                  AI is analyzing your content and crafting an interactive {selectedType} experience
+                  {selectedType === 'presentation'
+                    ? 'AI is mapping your content into an interactive mind map...'
+                    : `AI is analyzing your content and crafting an interactive ${selectedType} experience`}
                 </p>
                 <div className={styles.transformSteps}>
                   {['Analyzing content structure', 'Identifying key themes', 'Generating interactive blocks', 'Optimizing experience flow'].map((s, i) => (
@@ -264,7 +287,7 @@ function StudioContent() {
 
       {/* Step 4: Preview Result */}
       {step === 4 && result && (
-        <div className={`${styles.stepContent} animate-slide-up`}>
+        <div className={`${styles.stepContent} animate-slide-up`} style={mindMapData ? { maxWidth: '100%' } : {}}>
           <div className={styles.resultHeader}>
             <div>
               <h2 className={styles.stepTitle}>Your experience is ready! ✨</h2>
@@ -279,9 +302,15 @@ function StudioContent() {
               <span className="badge badge-success">Draft</span>
             </div>
 
-            <div className={styles.videoContainer} style={{ marginTop: '24px', borderRadius: '16px', overflow: 'hidden', background: '#000' }}>
-              <VideoPlayer scenes={result.blocks} />
-            </div>
+            {mindMapData ? (
+              <div style={{ marginTop: '24px' }}>
+                <MindMapViewer data={mindMapData} />
+              </div>
+            ) : (
+              <div className={styles.videoContainer} style={{ marginTop: '24px', borderRadius: '16px', overflow: 'hidden', background: '#000' }}>
+                <VideoPlayer scenes={result.blocks} />
+              </div>
+            )}
           </div>
 
           <div className={styles.stepActions}>
