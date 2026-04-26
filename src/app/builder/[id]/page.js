@@ -6,7 +6,7 @@ import {
   Save, Eye, ArrowLeft, Plus, Trash2, GripVertical, ChevronUp, ChevronDown,
   Type, Image, HelpCircle, MousePointer, BarChart3, List as ListIcon,
   Clock, Minus, Layout, Monitor, Tablet, Smartphone, Undo2, Redo2,
-  Settings, Sparkles, Check, Loader2
+  Settings, Sparkles, Check, Loader2, Film
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -19,6 +19,7 @@ const BLOCK_TYPES = [
   { type: 'cta', label: 'Call to Action', icon: MousePointer, color: '#22d3ee' },
   { type: 'timeline', label: 'Timeline', icon: Clock, color: '#fb923c' },
   { type: 'divider', label: 'Divider', icon: Minus, color: '#64748b' },
+  { type: 'scene', label: 'Video Scene', icon: Film, color: '#f87171' },
 ];
 
 function getDefaultContent(type) {
@@ -32,6 +33,7 @@ function getDefaultContent(type) {
     timeline: { items: [{ year: '2024', text: 'Event description' }, { year: '2025', text: 'Another event' }] },
     divider: {},
     slide: { title: 'Slide Title', subtitle: '', body: 'Slide content goes here' },
+    scene: { narration: 'Your narration script here', imagePrompt: 'A beautiful highly detailed illustration', animation: 'zoomIn' },
   };
   return defaults[type] || {};
 }
@@ -336,6 +338,27 @@ export default function BuilderPage() {
                 </div>
               )}
 
+              {selected.type === 'scene' && (
+                <>
+                  <div className={styles.propGroup}>
+                    <label className={styles.propLabel}>Narration (Audio)</label>
+                    <textarea className="input-field textarea-field" value={selected.content?.narration || ''} onChange={(e) => updateBlockContent(selected.id, { narration: e.target.value })} rows={4} />
+                  </div>
+                  <div className={styles.propGroup}>
+                    <label className={styles.propLabel}>Image Prompt</label>
+                    <textarea className="input-field textarea-field" value={selected.content?.imagePrompt || ''} onChange={(e) => updateBlockContent(selected.id, { imagePrompt: e.target.value })} rows={3} />
+                  </div>
+                  <div className={styles.propGroup}>
+                    <label className={styles.propLabel}>Animation</label>
+                    <select className="input-field" style={{ padding: '10px 14px', cursor: 'pointer' }} value={selected.content?.animation || 'zoomIn'} onChange={(e) => updateBlockContent(selected.id, { animation: e.target.value })}>
+                      <option value="zoomIn">Zoom In</option>
+                      <option value="panLeft">Pan Left</option>
+                      <option value="panRight">Pan Right</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
               {selected.type === 'divider' && (
                 <p className={styles.propHint}>Divider block — no configurable properties.</p>
               )}
@@ -423,6 +446,18 @@ function renderBlockPreview(block) {
       );
     case 'divider':
       return <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '8px 0' }} />;
+    case 'scene':
+      return (
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 0' }}>
+          <div style={{ width: 80, height: 45, background: 'var(--glass-bg)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid var(--glass-border)' }}>
+            🎥
+          </div>
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <p style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', margin: 0 }}>{c.narration || 'No narration'}</p>
+            <p style={{ fontSize: 11, color: 'var(--text-tertiary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', margin: 0, marginTop: 4 }}>{c.imagePrompt || 'No image prompt'}</p>
+          </div>
+        </div>
+      );
     default:
       return <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>Unknown block type: {block.type}</p>;
   }

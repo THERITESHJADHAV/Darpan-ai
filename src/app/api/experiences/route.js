@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongodb';
+import Experience from '@/models/Experience';
+import { seedDatabase } from '@/lib/seed';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const { getDb } = require('@/lib/db');
-    const db = getDb();
+    await dbConnect();
+    await seedDatabase();
 
-    const experiences = db.prepare('SELECT * FROM experiences ORDER BY updated_at DESC').all();
+    const experiences = await Experience.find().sort({ updated_at: -1 }).lean();
 
-    const parsed = experiences.map(exp => ({
-      ...exp,
-      blocks: exp.blocks ? JSON.parse(exp.blocks) : [],
-      tags: exp.tags ? JSON.parse(exp.tags) : [],
-    }));
-
-    return NextResponse.json(parsed);
+    return NextResponse.json(experiences);
   } catch (error) {
     console.error('GET /api/experiences error:', error);
     return NextResponse.json({ error: 'Failed to fetch experiences' }, { status: 500 });
@@ -22,8 +21,7 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { getDb } = require('@/lib/db');
-    const db = getDb();
+    await dbConnect();
     const body = await request.json();
 
     const id = `exp-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
@@ -36,18 +34,18 @@ export async function POST(request) {
       tags = [],
     } = body;
 
-    db.prepare(`
-      INSERT INTO experiences (id, title, description, type, status, content, blocks, tags)
-      VALUES (?, ?, ?, ?, 'draft', ?, ?, ?)
-    `).run(id, title, description, type, content, JSON.stringify(blocks), JSON.stringify(tags));
+    const experience = await Experience.create({
+      id,
+      title,
+      description,
+      type,
+      status: 'draft',
+      content,
+      blocks,
+      tags
+    });
 
-    const experience = db.prepare('SELECT * FROM experiences WHERE id = ?').get(id);
-
-    return NextResponse.json({
-      ...experience,
-      blocks: JSON.parse(experience.blocks || '[]'),
-      tags: JSON.parse(experience.tags || '[]'),
-    }, { status: 201 });
+    return NextResponse.json(experience, { status: 201 });
   } catch (error) {
     console.error('POST /api/experiences error:', error);
     return NextResponse.json({ error: 'Failed to create experience' }, { status: 500 });

@@ -1,115 +1,69 @@
-# ✨ Content-to-Experience Platform (CXP)
+# 🎥 Darpan-ai: AI Whiteboard Explainer Generator
 
-Transform raw content into rich, interactive digital experiences — powered by AI.
+Darpan-ai is an autonomous, full-stack pipeline that transforms any text, URL, or idea into a professional whiteboard animation video. It mimics a high-end production studio by automatically handling storyboarding, visual generation, hand-drawn animation, and voiceover orchestration.
 
-![CXP Builder](/public/docs/builder.png)
+![Darpan-ai Banner](https://image.pollinations.ai/prompt/professional%20whiteboard%20animation%20studio%20dashboard%20modern%20dark%20ui?width=1200&height=400&nologo=true)
 
-## 🚀 Overview
+## 🚀 The AI Video Pipeline
 
-A modern SaaS platform built with **Next.js 14**, designed to ingest content (text, URLs, documents) and transform it into stunning interactive experiences — landing pages, quizzes, presentations, micro-sites, and more. 
+Unlike simple slideshow generators, Darpan-ai uses a sophisticated multi-stage backend pipeline:
 
-The platform combines an **AI-powered transformation engine** with a full-featured **Visual Drag-and-Drop Builder**, allowing anyone to create polished, high-engagement digital experiences without writing a single line of code.
-
-### 🎥 See it in Action
-![Demo](/public/docs/demo.webp)
-
----
+1.  **🤖 Scene Orchestration**: Uses Google Gemini to transform user input into a logical sequence of visual metaphors and narrations.
+2.  **🎨 Visual Synthesis**: Automatically generates high-quality whiteboard sketches using Pollinations AI.
+3.  **✍️ Whiteboard Animation**: An OpenCV-powered Python engine simulates a hand-drawing effect frame-by-frame for every scene.
+4.  **🎙️ Text-to-Speech**: Generates realistic narration using `gTTS` (Google Text-to-Speech).
+5.  **🎞️ FFmpeg Orchestration**: A powerful backend layer that merges audio-video streams, loops visuals to match narration length, and concatenates scenes into a single high-quality `.mp4` file.
 
 ## 💎 Key Features
 
-- **🤖 AI Studio**: Paste any content or URL and let Google's Gemini AI automatically generate a structured, interactive experience tailored to your content.
-- **🎨 Visual Builder**: A fully-featured WYSIWYG editor with drag-and-drop block support. Create, edit, reorder, and configure interactive blocks in real-time.
-- **📱 Responsive Preview**: Built-in device emulators to preview experiences in Desktop, Tablet, and Mobile modes before publishing.
-- **📊 Analytics Dashboard**: Track views, user engagement, traffic sources, and overall performance with beautiful dynamic charts powered by Recharts.
-- **🎭 Template Gallery**: Pre-built templates for quick starts (Marketing, Education, Events, Portfolios).
-- **✨ Premium UI**: Breathtaking dark-mode glassmorphism design system using custom CSS and smooth micro-animations.
-
----
+-   **One-Click Generation**: Enter a topic and get a fully-produced video in under 60 seconds.
+-   **Intelligent Analogy Engine**: Gemini AI simplifies complex topics into visual metaphors and simple language.
+-   **Professional Transitions**: Seamlessly stitched scenes with baked-in audio synchronization.
+-   **Native Web Player**: High-performance video player with full-screen support and native controls.
+-   **Premium Dark UI**: A stunning glassmorphism interface built for modern creators.
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
-- **UI Library**: [React 18](https://react.dev/)
-- **Styling**: Vanilla CSS with custom glassmorphism design system
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Charts**: [Recharts](https://recharts.org/)
-- **AI Engine**: [Google Gemini API](https://ai.google.dev/) (`@google/generative-ai`)
-- **Database**: SQLite ([better-sqlite3](https://github.com/WiseLibs/better-sqlite3))
-- **Fonts**: Inter (Google Fonts)
-
----
-
-## 📦 Project Structure
-
-```text
-.
-├── src/
-│   ├── app/                      
-│   │   ├── page.js               # Dashboard & Overview
-│   │   ├── layout.js             # Root Layout & Sidebar
-│   │   ├── globals.css           # Core Design System & Properties
-│   │   ├── studio/               # AI Content Transformation Engine
-│   │   ├── builder/              # Visual Editor
-│   │   ├── experiences/          # Saved Projects List
-│   │   ├── templates/            # Template Gallery
-│   │   ├── preview/              # Public facing experience view
-│   │   ├── analytics/            # Analytics Dashboard
-│   │   └── api/                  # Backend API Routes
-│   │       ├── ai/transform/     # Gemini integration
-│   │       ├── analytics/        # Engagements & Views Data
-│   │       ├── experiences/      # DB CRUD Operations
-│   │       └── templates/        # Template filtering
-│   ├── components/               # Shared UI Components (Sidebar, TopBar)
-│   └── lib/
-│       └── db.js                 # SQLite schema & DB initializations
-├── public/
-│   └── docs/                     # Documentation assets
-└── package.json                  # Dependencies
-```
-
----
+-   **Frontend/Backend**: [Next.js 14](https://nextjs.org/) (App Router)
+-   **Database**: MongoDB (via Mongoose)
+-   **Image AI**: Pollinations AI (Free/No-Key)
+-   **Video Engine**: Python 3.14 + [OpenCV](https://opencv.org/)
+-   **Audio Engine**: Python + [gTTS](https://pypi.org/project/gTTS/)
+-   **Processing**: [FFmpeg](https://ffmpeg.org/) (System Level)
+-   **AI Intelligence**: [Google Gemini Pro](https://ai.google.dev/)
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/THERITESHJADHAV/AI-Powered-Content-to-Experience-C2E-Platform.git
-cd AI-Powered-Content-to-Experience-C2E-Platform
-```
+### 1. Prerequisites
 
-### 2. Install Dependencies
-```bash
-npm install
-```
+-   **Python 3.10+**: Required for animation and audio scripts.
+-   **FFmpeg**: Must be installed and added to your System PATH.
+-   **Node.js 18+**: For the Next.js environment.
 
-### 3. Environment Variables
-To enable the AI content generation features, create a `.env.local` file in the root directory:
+### 2. Setup Environment
+
+Create a `.env.local` file:
 ```env
-GEMINI_API_KEY=your_google_gemini_api_key_here
+GEMINI_API_KEY=your_gemini_key_here
+MONGODB_URI=your_mongodb_connection_string
 ```
-*(If no API key is provided, the platform will fall back to a basic parsing algorithm to simulate the experience creation without failing).*
 
-### 4. Run the Development Server
+### 3. Install Dependencies
+
+```bash
+# Install Node dependencies
+npm install
+
+# Install Python dependencies
+pip install opencv-python numpy gTTS
+```
+
+### 4. Run the Platform
+
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
----
-
-## 🎨 Design System
-
-CXP uses a custom-built, highly performant CSS architecture. All visual tokens (colors, spacing, animations, typography) are defined in `src/app/globals.css`. 
-
-**Key Design Elements:**
-- **Primary Color**: Electric Violet (`hsl(252, 87%, 64%)`)
-- **Accent Color**: Warm Amber (`hsl(38, 92%, 60%)`)
-- **Background**: Deep Midnight (`hsl(228, 25%, 8%)`)
-- **Cards**: Soft glassmorphism `rgba(255, 255, 255, 0.04)` with `backdrop-filter: blur(20px)`
-
----
-
 ## 📝 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the LICENSE file for details.

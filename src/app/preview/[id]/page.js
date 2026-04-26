@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Monitor, Tablet, Smartphone, ExternalLink,
-  Share2, Check, Copy, Eye, Edit3
+  ArrowLeft, Monitor, Tablet, Smartphone, Check, Copy, Edit3,
+  Loader2
 } from 'lucide-react';
+import VideoPlayer from '@/components/VideoPlayer';
 import styles from './page.module.css';
 
 export default function PreviewPage() {
@@ -43,6 +44,7 @@ export default function PreviewPage() {
   if (!experience) return <div className={styles.page}><h2>Experience not found</h2></div>;
 
   const blocks = experience.blocks || [];
+  const isVideo = experience.type === 'video';
 
   return (
     <div className={styles.page}>
@@ -81,19 +83,24 @@ export default function PreviewPage() {
       {/* Preview Frame */}
       <div className={styles.frameWrapper}>
         <div className={`${styles.frame} ${styles[`frame_${device}`]}`}>
-          <div className={styles.experienceContent}>
-            {blocks.map((block, i) => (
-              <div key={block.id || i} className={`${styles.block} ${styles[`block_${block.type}`]}`}>
-                {renderLiveBlock(block, { quizAnswers, answerQuiz, showResults, checkQuiz })}
-              </div>
-            ))}
-          </div>
+          {isVideo ? (
+            <VideoPlayer scenes={blocks.filter(b => b.type === 'scene')} />
+          ) : (
+            <div className={styles.experienceContent}>
+              {blocks.map((block, i) => (
+                <div key={block.id || i} className={`${styles.block} ${styles[`block_${block.type}`]}`}>
+                  {renderLiveBlock(block, { quizAnswers, answerQuiz, showResults, checkQuiz })}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
+// Render standard blocks
 function renderLiveBlock(block, { quizAnswers, answerQuiz, showResults, checkQuiz }) {
   const c = block.content || {};
   const st = styles;
@@ -186,6 +193,6 @@ function renderLiveBlock(block, { quizAnswers, answerQuiz, showResults, checkQui
     case 'divider':
       return <hr className={styles.liveDivider} />;
     default:
-      return <p style={{ color: 'var(--text-tertiary)' }}>Unknown block</p>;
+      return null;
   }
 }

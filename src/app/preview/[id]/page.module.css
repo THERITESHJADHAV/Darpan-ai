@@ -142,6 +142,25 @@
 
 .liveDivider { border: none; border-top: 1px solid var(--border); margin: var(--space-lg) 0; }
 
+/* Video Player */
+.videoPlayer { display: flex; flex-direction: column; width: 100%; height: 100%; }
+.videoCanvas { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; border-bottom: 1px solid var(--glass-border); }
+.videoImage { width: 100%; height: 100%; object-fit: cover; transition: transform 8s ease-out; }
+.videoImage.zoomIn { transform: scale(1.1); animation: zoomInAnim 8s linear forwards; }
+.videoImage.panLeft { transform: scale(1.1) translateX(5%); animation: panLeftAnim 8s linear forwards; }
+.videoImage.panRight { transform: scale(1.1) translateX(-5%); animation: panRightAnim 8s linear forwards; }
+@keyframes zoomInAnim { to { transform: scale(1.3); } }
+@keyframes panLeftAnim { to { transform: scale(1.1) translateX(-5%); } }
+@keyframes panRightAnim { to { transform: scale(1.1) translateX(5%); } }
+.videoPlaceholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px; }
+.videoSubtitles { position: absolute; bottom: 30px; left: 10%; right: 10%; text-align: center; background: rgba(0,0,0,0.7); padding: 12px 24px; border-radius: 8px; backdrop-filter: blur(8px); }
+.videoSubtitles p { color: white; font-size: 18px; font-weight: 600; margin: 0; line-height: 1.4; }
+.videoProgress { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; display: flex; gap: 2px; background: rgba(0,0,0,0.5); }
+.progressSegment { flex: 1; background: rgba(255,255,255,0.2); transition: background 0.3s; }
+.progressDone { background: var(--primary); }
+.progressActive { background: var(--primary-light); }
+.videoControls { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 20px; background: var(--bg-surface); }
+
 @media (max-width: 768px) {
   .toolbar { flex-direction: column; align-items: stretch; }
   .liveHero { padding: var(--space-xl); }

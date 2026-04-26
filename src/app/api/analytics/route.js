@@ -1,88 +1,93 @@
 import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongodb';
+import Experience from '@/models/Experience';
+import AnalyticsEvent from '@/models/AnalyticsEvent';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
-    const { getDb } = require('@/lib/db');
-    const db = getDb();
+    await dbConnect();
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || '30';
+    const period = parseInt(searchParams.get('period') || '30', 10);
 
-    const daysAgo = parseInt(period);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - period);
 
-    // Total views
-    const totalViews = db.prepare(`
-      SELECT COUNT(*) as count FROM analytics_events
-      WHERE event_type = 'view' AND created_at >= datetime('now', '-${daysAgo} days')
-    `).get();
+    // Total views and engagements
+    const [viewsCount, engagementsCount] = await Promise.all([
+      AnalyticsEvent.countDocuments({ event_type: 'view', created_at: { $gte: startDate } }),
+      AnalyticsEvent.countDocuments({ event_type: 'engagement', created_at: { $gte: startDate } })
+    ]);
 
-    // Total engagements
-    const totalEngagements = db.prepare(`
-      SELECT COUNT(*) as count FROM analytics_events
-      WHERE event_type = 'engagement' AND created_at >= datetime('now', '-${daysAgo} days')
-    `).get();
-
-    // Engagement rate
-    const engagementRate = totalViews.count > 0
-      ? ((totalEngagements.count / totalViews.count) * 100).toFixed(1)
+    const engagementRate = viewsCount > 0
+      ? ((engagementsCount / viewsCount) * 100).toFixed(1)
       : 0;
 
-    // Views per day
-    const viewsByDay = db.prepare(`
-      SELECT date(created_at) as date, COUNT(*) as views
-      FROM analytics_events
-      WHERE event_type = 'view' AND created_at >= datetime('now', '-${daysAgo} days')
-      GROUP BY date(created_at)
-      ORDER BY date ASC
-    `).all();
+    // Daily Data aggregation
+    const dailyStats = await AnalyticsEvent.aggregate([
+      { $match: { created_at: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: "%Y-%m-%d", date: "$created_at" } },
+            type: "$event_type"
+          },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
 
-    // Engagements per day
-    const engagementsByDay = db.prepare(`
-      SELECT date(created_at) as date, COUNT(*) as engagements
-      FROM analytics_events
-      WHERE event_type = 'engagement' AND created_at >= datetime('now', '-${daysAgo} days')
-      GROUP BY date(created_at)
-      ORDER BY date ASC
-    `).all();
-
-    // Merge views and engagements by day
     const dateMap = {};
-    viewsByDay.forEach(d => { dateMap[d.date] = { date: d.date, views: d.views, engagements: 0 }; });
-    engagementsByDay.forEach(d => {
-      if (dateMap[d.date]) dateMap[d.date].engagements = d.engagements;
-      else dateMap[d.date] = { date: d.date, views: 0, engagements: d.engagements };
+    dailyStats.forEach(stat => {
+      const date = stat._id.date;
+      if (!dateMap[date]) dateMap[date] = { date, views: 0, engagements: 0 };
+      if (stat._id.type === 'view') dateMap[date].views = stat.count;
+      else if (stat._id.type === 'engagement') dateMap[date].engagements = stat.count;
     });
+
     const dailyData = Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
 
-    // Top experiences
-    const topExperiences = db.prepare(`
-      SELECT e.title, e.type, e.id, COUNT(a.id) as views
-      FROM experiences e
-      LEFT JOIN analytics_events a ON a.experience_id = e.id AND a.event_type = 'view'
-        AND a.created_at >= datetime('now', '-${daysAgo} days')
-      GROUP BY e.id
-      ORDER BY views DESC
-      LIMIT 5
-    `).all();
+    // Top Experiences
+    const topExpStats = await AnalyticsEvent.aggregate([
+      { $match: { event_type: 'view', created_at: { $gte: startDate } } },
+      { $group: { _id: "$experience_id", views: { $sum: 1 } } },
+      { $sort: { views: -1 } },
+      { $limit: 5 }
+    ]);
+
+    const topExperiences = [];
+    for (const stat of topExpStats) {
+      const exp = await Experience.findOne({ id: stat._id }).lean();
+      if (exp) {
+        topExperiences.push({ title: exp.title, type: exp.type, id: exp.id, views: stat.views });
+      }
+    }
 
     // Source breakdown
-    const sources = db.prepare(`
-      SELECT json_extract(metadata, '$.source') as source, COUNT(*) as count
-      FROM analytics_events
-      WHERE event_type = 'view' AND created_at >= datetime('now', '-${daysAgo} days')
-      GROUP BY source
-    `).all();
+    const sourceStats = await AnalyticsEvent.aggregate([
+      { $match: { event_type: 'view', created_at: { $gte: startDate } } },
+      { $group: { _id: "$metadata.source", count: { $sum: 1 } } }
+    ]);
+
+    const sources = sourceStats.map(s => ({
+      source: s._id || 'direct',
+      count: s.count
+    }));
 
     // Experience count
-    const totalExperiences = db.prepare('SELECT COUNT(*) as count FROM experiences').get();
-    const publishedExperiences = db.prepare("SELECT COUNT(*) as count FROM experiences WHERE status = 'published'").get();
+    const [totalExperiences, publishedExperiences] = await Promise.all([
+      Experience.countDocuments(),
+      Experience.countDocuments({ status: 'published' })
+    ]);
 
     return NextResponse.json({
       overview: {
-        totalViews: totalViews.count,
-        totalEngagements: totalEngagements.count,
+        totalViews: viewsCount,
+        totalEngagements: engagementsCount,
         engagementRate: parseFloat(engagementRate),
-        totalExperiences: totalExperiences.count,
-        publishedExperiences: publishedExperiences.count,
+        totalExperiences,
+        publishedExperiences,
       },
       dailyData,
       topExperiences,

@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Sparkles, FileText, Link as LinkIcon, Upload, PenTool,
   BookOpen, Brain, Rocket, Presentation, PieChart, Globe,
-  ArrowRight, ArrowLeft, Loader2, Check, Wand2, Eye
+  ArrowRight, ArrowLeft, Loader2, Check, Wand2, Eye, Play
 } from 'lucide-react';
+import VideoPlayer from '@/components/VideoPlayer';
 import styles from './page.module.css';
 
 const experienceTypes = [
@@ -69,6 +70,11 @@ function StudioContent() {
       }
 
       const data = await res.json();
+      
+      // No longer need TTS generation from API since VideoPlayer uses Web Speech API!
+      const scenesWithAudio = data.blocks || [];
+      
+      data.blocks = scenesWithAudio;
       setResult(data);
       setStep(4);
     } catch (e) {
@@ -273,22 +279,8 @@ function StudioContent() {
               <span className="badge badge-success">Draft</span>
             </div>
 
-            <div className={styles.blocksList}>
-              {result.blocks?.map((block, i) => (
-                <div key={i} className={styles.blockPreview}>
-                  <span className={styles.blockType}>{block.type}</span>
-                  <span className={styles.blockContent}>
-                    {block.type === 'hero' && block.content?.title}
-                    {block.type === 'text' && block.content?.body?.substring(0, 80) + '...'}
-                    {block.type === 'quiz' && block.content?.question}
-                    {block.type === 'features' && `${block.content?.items?.length || 0} features`}
-                    {block.type === 'stat' && `${block.content?.value} — ${block.content?.label}`}
-                    {block.type === 'cta' && block.content?.label}
-                    {block.type === 'slide' && block.content?.title}
-                    {block.type === 'timeline' && `${block.content?.items?.length || 0} events`}
-                  </span>
-                </div>
-              ))}
+            <div className={styles.videoContainer} style={{ marginTop: '24px', borderRadius: '16px', overflow: 'hidden', background: '#000' }}>
+              <VideoPlayer scenes={result.blocks} />
             </div>
           </div>
 
@@ -300,7 +292,7 @@ function StudioContent() {
               className="btn btn-primary btn-lg"
               onClick={() => router.push(`/builder/${result.id}`)}
             >
-              <Eye size={18} /> Open in Builder
+              <PenTool size={18} /> Open in Builder
             </button>
           </div>
         </div>

@@ -1,40 +1,31 @@
 import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongodb';
+import Template from '@/models/Template';
+import { seedDatabase } from '@/lib/seed';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
-    const { getDb } = require('@/lib/db');
-    const db = getDb();
+    await dbConnect();
+    await seedDatabase();
+    
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const type = searchParams.get('type');
 
-    let query = 'SELECT * FROM templates';
-    const conditions = [];
-    const params = [];
+    let query = {};
 
     if (category && category !== 'all') {
-      conditions.push('category = ?');
-      params.push(category);
+      query.category = category;
     }
     if (type && type !== 'all') {
-      conditions.push('type = ?');
-      params.push(type);
+      query.type = type;
     }
 
-    if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
-    }
+    const templates = await Template.find(query).sort({ popularity: -1 }).lean();
 
-    query += ' ORDER BY popularity DESC';
-
-    const templates = db.prepare(query).all(...params);
-
-    const parsed = templates.map(t => ({
-      ...t,
-      blocks: JSON.parse(t.blocks || '[]'),
-    }));
-
-    return NextResponse.json(parsed);
+    return NextResponse.json(templates);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 });
   }

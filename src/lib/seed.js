@@ -1,81 +1,23 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
+import dbConnect from './mongodb';
+import Template from '../models/Template';
+import Experience from '../models/Experience';
+import AnalyticsEvent from '../models/AnalyticsEvent';
 
-const DB_PATH = path.join(process.cwd(), 'data', 'cxp.db');
+export async function seedDatabase() {
+  await dbConnect();
 
-let db;
-
-function getDb() {
-  if (db) return db;
-
-  // Ensure data directory exists
-  const dir = path.dirname(DB_PATH);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  const count = await Template.countDocuments();
+  if (count === 0) {
+    await seedTemplates();
   }
 
-  db = new Database(DB_PATH);
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
-
-  // Create tables
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS experiences (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      type TEXT NOT NULL DEFAULT 'story',
-      status TEXT NOT NULL DEFAULT 'draft',
-      content TEXT,
-      blocks TEXT,
-      thumbnail TEXT,
-      tags TEXT,
-      views INTEGER DEFAULT 0,
-      engagement_rate REAL DEFAULT 0,
-      created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS templates (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      type TEXT NOT NULL,
-      category TEXT NOT NULL,
-      thumbnail TEXT,
-      blocks TEXT,
-      preview_data TEXT,
-      popularity INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS analytics_events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      experience_id TEXT,
-      event_type TEXT NOT NULL,
-      metadata TEXT,
-      created_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (experience_id) REFERENCES experiences(id)
-    );
-  `);
-
-  // Seed templates if empty
-  const count = db.prepare('SELECT COUNT(*) as count FROM templates').get();
-  if (count.count === 0) {
-    seedTemplates(db);
+  const expCount = await Experience.countDocuments();
+  if (expCount === 0) {
+    await seedExperiences();
   }
-
-  // Seed sample experiences if empty
-  const expCount = db.prepare('SELECT COUNT(*) as count FROM experiences').get();
-  if (expCount.count === 0) {
-    seedExperiences(db);
-  }
-
-  return db;
 }
 
-function seedTemplates(db) {
+async function seedTemplates() {
   const templates = [
     {
       id: 'tmpl-story-1',
@@ -84,12 +26,12 @@ function seedTemplates(db) {
       type: 'story',
       category: 'marketing',
       thumbnail: '📖',
-      blocks: JSON.stringify([
+      blocks: [
         { type: 'hero', content: { title: 'Our Story', subtitle: 'From humble beginnings to global impact' } },
         { type: 'text', content: { body: 'Every great journey starts with a single step...' } },
         { type: 'timeline', content: { items: [{ year: '2020', text: 'Founded' }, { year: '2022', text: 'Global expansion' }] } },
         { type: 'cta', content: { label: 'Join Our Journey', url: '#' } }
-      ]),
+      ],
       popularity: 156
     },
     {
@@ -99,10 +41,10 @@ function seedTemplates(db) {
       type: 'quiz',
       category: 'education',
       thumbnail: '🧠',
-      blocks: JSON.stringify([
+      blocks: [
         { type: 'hero', content: { title: 'Test Your Knowledge', subtitle: 'See how much you really know' } },
         { type: 'quiz', content: { question: 'Sample question?', options: ['A', 'B', 'C', 'D'], correct: 0 } }
-      ]),
+      ],
       popularity: 243
     },
     {
@@ -112,12 +54,12 @@ function seedTemplates(db) {
       type: 'landing',
       category: 'marketing',
       thumbnail: '🚀',
-      blocks: JSON.stringify([
+      blocks: [
         { type: 'hero', content: { title: 'Introducing the Future', subtitle: 'The product you\'ve been waiting for' } },
         { type: 'features', content: { items: [{ icon: '⚡', title: 'Fast', desc: 'Lightning fast performance' }] } },
         { type: 'pricing', content: { plans: [{ name: 'Starter', price: '$9' }] } },
         { type: 'cta', content: { label: 'Get Started Free', url: '#' } }
-      ]),
+      ],
       popularity: 312
     },
     {
@@ -127,11 +69,11 @@ function seedTemplates(db) {
       type: 'presentation',
       category: 'business',
       thumbnail: '📊',
-      blocks: JSON.stringify([
+      blocks: [
         { type: 'slide', content: { title: 'Welcome', subtitle: 'Company Pitch Deck 2026' } },
         { type: 'slide', content: { title: 'The Problem', body: 'Current solutions are outdated...' } },
         { type: 'slide', content: { title: 'Our Solution', body: 'We built something revolutionary.' } }
-      ]),
+      ],
       popularity: 189
     },
     {
@@ -141,11 +83,11 @@ function seedTemplates(db) {
       type: 'infographic',
       category: 'education',
       thumbnail: '📈',
-      blocks: JSON.stringify([
+      blocks: [
         { type: 'hero', content: { title: 'The State of AI in 2026' } },
         { type: 'stat', content: { value: '85%', label: 'Companies using AI' } },
         { type: 'chart', content: { type: 'bar', data: [10, 20, 40, 80] } }
-      ]),
+      ],
       popularity: 178
     },
     {
@@ -155,11 +97,11 @@ function seedTemplates(db) {
       type: 'microsite',
       category: 'events',
       thumbnail: '🎪',
-      blocks: JSON.stringify([
+      blocks: [
         { type: 'hero', content: { title: 'Tech Summit 2026', subtitle: 'Join 5000+ innovators' } },
         { type: 'agenda', content: { items: [{ time: '9:00 AM', title: 'Keynote' }] } },
         { type: 'cta', content: { label: 'Register Now', url: '#' } }
-      ]),
+      ],
       popularity: 201
     },
     {
@@ -169,11 +111,11 @@ function seedTemplates(db) {
       type: 'story',
       category: 'portfolio',
       thumbnail: '🎨',
-      blocks: JSON.stringify([
+      blocks: [
         { type: 'hero', content: { title: 'My Work', subtitle: 'Selected projects and case studies' } },
         { type: 'gallery', content: { images: [] } },
         { type: 'text', content: { body: 'Each project represents months of dedicated craftsmanship.' } }
-      ]),
+      ],
       popularity: 145
     },
     {
@@ -183,10 +125,10 @@ function seedTemplates(db) {
       type: 'story',
       category: 'marketing',
       thumbnail: '🗺️',
-      blocks: JSON.stringify([
+      blocks: [
         { type: 'hero', content: { title: 'Customer Journey Map' } },
         { type: 'timeline', content: { items: [{ year: 'Awareness', text: 'Discovery phase' }] } }
-      ]),
+      ],
       popularity: 167
     },
     {
@@ -196,25 +138,18 @@ function seedTemplates(db) {
       type: 'quiz',
       category: 'marketing',
       thumbnail: '🎯',
-      blocks: JSON.stringify([
+      blocks: [
         { type: 'hero', content: { title: 'Find Your Perfect Match' } },
         { type: 'quiz', content: { question: 'What matters most to you?', options: ['Speed', 'Design', 'Price', 'Features'], correct: -1 } }
-      ]),
+      ],
       popularity: 234
     },
   ];
 
-  const stmt = db.prepare(`
-    INSERT INTO templates (id, title, description, type, category, thumbnail, blocks, popularity)
-    VALUES (@id, @title, @description, @type, @category, @thumbnail, @blocks, @popularity)
-  `);
-
-  for (const t of templates) {
-    stmt.run(t);
-  }
+  await Template.insertMany(templates);
 }
 
-function seedExperiences(db) {
+async function seedExperiences() {
   const experiences = [
     {
       id: 'exp-demo-1',
@@ -223,7 +158,7 @@ function seedExperiences(db) {
       type: 'story',
       status: 'published',
       content: 'Welcome to the Content-to-Experience Platform!',
-      blocks: JSON.stringify([
+      blocks: [
         { id: 'b1', type: 'hero', content: { title: 'Welcome to CXP', subtitle: 'Transform content into magic ✨' }, order: 0 },
         { id: 'b2', type: 'text', content: { body: 'This platform helps you transform any raw content — articles, docs, data — into stunning interactive experiences that engage your audience.' }, order: 1 },
         { id: 'b3', type: 'features', content: { items: [
@@ -232,8 +167,8 @@ function seedExperiences(db) {
           { icon: '📊', title: 'Analytics', desc: 'Track engagement in real-time' }
         ]}, order: 2 },
         { id: 'b4', type: 'cta', content: { label: 'Start Creating', url: '/studio' }, order: 3 }
-      ]),
-      tags: JSON.stringify(['demo', 'welcome']),
+      ],
+      tags: ['demo', 'welcome'],
       views: 1247,
       engagement_rate: 78.5
     },
@@ -244,12 +179,12 @@ function seedExperiences(db) {
       type: 'infographic',
       status: 'published',
       content: 'The AI landscape is evolving rapidly...',
-      blocks: JSON.stringify([
+      blocks: [
         { id: 'b1', type: 'hero', content: { title: 'The AI Revolution', subtitle: 'Key insights from 2026' }, order: 0 },
         { id: 'b2', type: 'stat', content: { value: '92%', label: 'Enterprise AI adoption' }, order: 1 },
         { id: 'b3', type: 'text', content: { body: 'Artificial intelligence has transformed every major industry...' }, order: 2 }
-      ]),
-      tags: JSON.stringify(['ai', 'report', 'infographic']),
+      ],
+      tags: ['ai', 'report', 'infographic'],
       views: 856,
       engagement_rate: 82.3
     },
@@ -260,11 +195,11 @@ function seedExperiences(db) {
       type: 'quiz',
       status: 'draft',
       content: 'How well do you know our product?',
-      blocks: JSON.stringify([
+      blocks: [
         { id: 'b1', type: 'hero', content: { title: 'Product Knowledge Quiz', subtitle: 'Let\'s see what you know!' }, order: 0 },
         { id: 'b2', type: 'quiz', content: { question: 'What year was CXP founded?', options: ['2024', '2025', '2026'], correct: 2 }, order: 1 }
-      ]),
-      tags: JSON.stringify(['quiz', 'training']),
+      ],
+      tags: ['quiz', 'training'],
       views: 342,
       engagement_rate: 91.2
     },
@@ -275,47 +210,55 @@ function seedExperiences(db) {
       type: 'presentation',
       status: 'draft',
       content: 'Q2 Strategic priorities...',
-      blocks: JSON.stringify([
+      blocks: [
         { id: 'b1', type: 'slide', content: { title: 'Q2 Strategy', subtitle: 'Growth & Innovation' }, order: 0 }
-      ]),
-      tags: JSON.stringify(['strategy', 'presentation']),
+      ],
+      tags: ['strategy', 'presentation'],
       views: 128,
       engagement_rate: 65.8
     },
   ];
 
-  const stmt = db.prepare(`
-    INSERT INTO experiences (id, title, description, type, status, content, blocks, tags, views, engagement_rate)
-    VALUES (@id, @title, @description, @type, @status, @content, @blocks, @tags, @views, @engagement_rate)
-  `);
-
-  for (const e of experiences) {
-    stmt.run(e);
-  }
+  await Experience.insertMany(experiences);
 
   // Seed analytics
-  const eventStmt = db.prepare(`
-    INSERT INTO analytics_events (experience_id, event_type, metadata, created_at)
-    VALUES (?, ?, ?, ?)
-  `);
-
+  const events = [];
   const now = new Date();
   for (let i = 30; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
-
+    
     for (const exp of experiences) {
       const viewCount = Math.floor(Math.random() * 50) + 10;
       for (let v = 0; v < viewCount; v++) {
-        eventStmt.run(exp.id, 'view', JSON.stringify({ source: ['direct', 'social', 'email', 'search'][Math.floor(Math.random() * 4)] }), `${dateStr}T${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`);
+        const randomHour = Math.floor(Math.random() * 24);
+        const randomMinute = Math.floor(Math.random() * 60);
+        const eventDate = new Date(date);
+        eventDate.setHours(randomHour, randomMinute, 0, 0);
+        
+        events.push({
+          experience_id: exp.id,
+          event_type: 'view',
+          metadata: { source: ['direct', 'social', 'email', 'search'][Math.floor(Math.random() * 4)] },
+          created_at: eventDate
+        });
       }
       const engageCount = Math.floor(viewCount * (0.3 + Math.random() * 0.5));
       for (let e = 0; e < engageCount; e++) {
-        eventStmt.run(exp.id, 'engagement', JSON.stringify({ action: ['click', 'scroll', 'interact', 'share'][Math.floor(Math.random() * 4)] }), `${dateStr}T${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`);
+        const randomHour = Math.floor(Math.random() * 24);
+        const randomMinute = Math.floor(Math.random() * 60);
+        const eventDate = new Date(date);
+        eventDate.setHours(randomHour, randomMinute, 0, 0);
+        
+        events.push({
+          experience_id: exp.id,
+          event_type: 'engagement',
+          metadata: { action: ['click', 'scroll', 'interact', 'share'][Math.floor(Math.random() * 4)] },
+          created_at: eventDate
+        });
       }
     }
   }
+  
+  await AnalyticsEvent.insertMany(events);
 }
-
-module.exports = { getDb };
