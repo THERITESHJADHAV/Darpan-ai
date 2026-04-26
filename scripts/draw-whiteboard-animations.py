@@ -192,23 +192,53 @@ class AllVariables:
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python draw-whiteboard-animations.py <input_img_path> <output_video_path>")
+        print("Usage: python draw-whiteboard-animations.py <input_img_path> <output_video_path> [target_duration_seconds]")
         sys.exit(1)
 
     img_path = sys.argv[1]
     save_video_path = sys.argv[2]
     
+    # Optional: target duration from audio probe (passed by the API)
+    target_duration = float(sys.argv[3]) if len(sys.argv) > 3 else 5.0
+    
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     hand_path = os.path.join(base_dir, "public", "assets", "drawing-hand.png")
     hand_mask_path = os.path.join(base_dir, "public", "assets", "hand-mask.png")
 
+    frame_rate = 30
+    resize_wd = 512
+    resize_ht = 512
+    split_len = 16  # 512 is perfectly divisible by 16
+
+    # Calculate how many grid cells exist (approximate number of drawing steps)
+    n_cells = (resize_wd // split_len) * (resize_ht // split_len)  # 32 * 32 = 1024
+    
+    # We want the DRAWING phase to take ~60% of target_duration
+    # and the HOLD phase (showing the completed image) to take ~40%
+    drawing_time = target_duration * 0.6
+    hold_time = target_duration * 0.4
+    
+    # drawing_frames = drawing_time * frame_rate
+    # Each cell produces 1 frame per skip_rate iterations, so:
+    # total_written_frames = n_cells / skip_rate
+    # We want: total_written_frames = drawing_frames
+    # Therefore: skip_rate = n_cells / drawing_frames
+    drawing_frames = drawing_time * frame_rate
+    if drawing_frames > 0:
+        skip_rate = max(1, int(n_cells / drawing_frames))
+    else:
+        skip_rate = 25
+    
+    # Hold duration in seconds for the finished image
+    end_hold_sec = max(1, int(hold_time))
+
     variables = AllVariables(
-        frame_rate=30,
-        resize_wd=512,
-        resize_ht=512,
-        split_len=16,  # 512 is perfectly divisible by 16
-        object_skip_rate=25, 
-        end_gray_img_duration_in_sec=1,
+        frame_rate=frame_rate,
+        resize_wd=resize_wd,
+        resize_ht=resize_ht,
+        split_len=split_len,
+        object_skip_rate=skip_rate,
+        end_gray_img_duration_in_sec=end_hold_sec,
     )
 
     try:

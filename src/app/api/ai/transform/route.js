@@ -85,28 +85,43 @@ export async function POST(request) {
 }
 
 function buildVideoPrompt(content) {
-  return `You are an expert Explainer Video Director (like Kurzgesagt or TED-Ed). Given the following complex educational content, break it down into a highly engaging, visually descriptive 4-6 scene video storyboard.
+  return `You are a world-class Explainer Video Director who creates whiteboard animation storyboards. Your job is to turn complex content into a sequence of visually clear, perfectly synchronized scenes.
 
-CONTENT:
+CONTENT TO EXPLAIN:
 """
 ${content.substring(0, 4000)}
 """
 
-RULES:
-1. Create a dynamic number of scenes (between 2 and 8) depending on the length and complexity of the content to perfectly explain the topic without rushing. The scenes must flow seamlessly as one single explaining video.
-2. SIMPLIFY THE LANGUAGE: Do not just copy the user's text. Convert it into simpler language using analogies and visual metaphors without changing the actual meaning.
-3. For each scene, write a "narration" script. THIS MUST BE SHORT (1-2 sentences max) so the text annotation doesn't cover the whole screen.
-4. For each scene, write a highly descriptive "imagePrompt" that visualizes the metaphor so the user doesn't have to imagine it. It should end with "flat vector illustration, bold vibrant colors, minimalist, high quality, whiteboard style".
+YOUR TASK:
+Create a storyboard with as many scenes as necessary to fully explain the topic. EACH scene must have a narration and an image that PERFECTLY matches. Generate a complete and thorough explanation.
 
-Respond with ONLY valid JSON in this exact format:
+CRITICAL RULES:
+
+**NARRATION RULES:**
+1. SIMPLIFY the language. Use analogies, metaphors, and everyday comparisons. Never copy the input verbatim.
+2. The narration should be natural and engaging, containing as much detail as necessary to explain the scene fully.
+3. The narrations must flow together as a continuous explanation — the first scene introduces, middle scenes explain step-by-step, the last scene concludes.
+
+**IMAGE PROMPT RULES (MOST IMPORTANT):**
+1. The imagePrompt MUST describe EXACTLY what the narration is saying. If the narration says "DNA is like a twisted ladder", the image MUST show a twisted ladder that looks like DNA.
+2. Be HYPER-SPECIFIC: describe the exact objects, their positions, colors, and relationships. 
+3. Include specific visual details: "a red apple falling from a green tree onto a boy's head" NOT "an apple and gravity".
+4. Every imagePrompt MUST end with: "clean whiteboard sketch, black ink on white background, simple line drawing, educational diagram style"
+5. DO NOT use abstract concepts. Every image must show CONCRETE, DRAWABLE objects.
+6. Think: "If I hand this description to an artist, could they draw it in 30 seconds?" If not, simplify.
+
+**BAD imagePrompt example:** "gravity concept with space" (too vague, not drawable)
+**GOOD imagePrompt example:** "A large bowling ball sitting on a stretched rubber sheet creating a deep curve, with a small marble rolling down the curve towards the bowling ball, arrows showing the direction of movement, clean whiteboard sketch, black ink on white background, simple line drawing, educational diagram style"
+
+Respond with ONLY valid JSON:
 \`\`\`json
 {
-  "title": "A catchy title for the video",
+  "title": "A catchy, descriptive title",
   "scenes": [
     {
       "id": "scene-1",
-      "narration": "Imagine gravity not as a pull, but as a giant cosmic trampoline...",
-      "imagePrompt": "A bowling ball resting on a trampoline fabric creating a dip, flat vector illustration, bold vibrant colors, minimalist, high quality, whiteboard style",
+      "narration": "Short, simple narration sentence here.",
+      "imagePrompt": "Hyper-detailed, specific visual description matching the narration exactly, clean whiteboard sketch, black ink on white background, simple line drawing, educational diagram style",
       "animation": "zoomIn"
     }
   ]

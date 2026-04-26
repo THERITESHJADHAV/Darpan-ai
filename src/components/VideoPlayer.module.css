@@ -255,3 +255,8 @@
   text-align: center;
   color: #666;
 }
+
+.seamlessContainer { position: relative; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; background: #000; }
+.seamlessVideo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; transition: opacity 0.1s ease-in-out; }
+.activeVideo { opacity: 1; z-index: 2; }
+.inactiveVideo { opacity: 0; z-index: 1; }
